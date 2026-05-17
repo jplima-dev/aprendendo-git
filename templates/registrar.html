@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+
+    <div class="col-md-5">
+
+        {% if erro %}
+            <div class="alert alert-danger">
+                {{ erro }}
+            </div>
+        {% endif %}
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h2 class="text-center mb-4">
+                    Criar Conta
+                </h2>
+
+                <form method="POST" action="{{ url_for('registrar') }}">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Nome
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            placeholder="Digite seu nome"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Senha
+                        </label>
+
+                        <input
+                            type="password"
+                            name="senha"
+                            class="form-control"
+                            placeholder="Digite sua senha"
+                            required
+                        >
+
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Criar Conta
+                    </button>
+
+                </form>
+
+                <hr>
+
+                <div class="text-center">
+
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                        Já tenho uma conta
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

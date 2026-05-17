@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+
+    <!-- PAINEL ESQUERDO -->
+    <div class="col-md-3">
+
+        {% if session.get('usuario_role') == 'Admin' %}
+
+        <div class="card shadow mb-4">
+
+            <div class="card-body">
+
+                <h5 class="mb-3">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    Anotações da Turma
+                </h5>
+
+                <form method="POST"
+                      action="{{ url_for('editar_anotacao_sala', id=sala.id_sala) }}">
+
+                    <textarea name="anotacao"
+                              class="form-control mb-3"
+                              rows="10"
+                              placeholder="Escreva observações gerais da turma...">{{ sala.anotacao or '' }}</textarea>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Salvar Anotação
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="col-md-9">
+
+        <!-- CABEÇALHO -->
+        <div class="card shadow mb-4">
+
+            <div class="card-body d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h2 class="mb-1">{{ sala.nome }}</h2>
+
+                    {% if session.get('usuario_role') == 'Admin' %}
+                        <p class="text-muted mb-0">
+                            Painel completo do professor
+                        </p>
+
+                    {% elif session.get('usuario_role') == 'Assistant' %}
+                        <p class="text-muted mb-0">
+                            Painel do monitor
+                        </p>
+
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            Área do aluno
+                        </p>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Voltar
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTÕES -->
+        {% if session.get('usuario_role') in ['Admin', 'Assistant'] %}
+
+        <div class="row mb-4">
+
+            {% if session.get('usuario_role') == 'Admin' %}
+
+            <div class="col-md-6 mb-3">
+
+                <button class="btn btn-primary w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalAluno">
+
+                    <i class="fa-solid fa-user-plus"></i>
+                    Adicionar Aluno
+
+                </button>
+
+            </div>
+
+            {% endif %}
+
+            <div class="col-md-6 mb-3">
+
+                <button class="btn btn-warning w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalTarefa">
+
+                    <i class="fa-solid fa-list-check"></i>
+                    Adicionar Tarefa
+
+                </button>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ALUNOS -->
+        <div class="card shadow mb-4">
+
+            <div class="card-body">
+
+                <h4 class="mb-4">
+                    <i class="fa-solid fa-user-graduate text-primary"></i>
+                    Alunos
+                </h4>
+
+                {% if alunos %}
+
+                <div class="row g-3">
+
+                    {% for aluno in alunos %}
+
+                    {% set advertencias = aluno.advertencia or 0 %}
+
+                    {% set cor =
+                        'success' if advertencias <= 2 else
+                        'warning' if advertencias <= 5 else
+                        'danger'
+                    %}
+
+                    <div class="col-md-6">
+
+                        <div class="card border-0 shadow-sm h-100">
+
+                            <div class="card-body bg-{{ cor }} bg-opacity-10 rounded">
+
+                                <!-- TOPO -->
+                                <div class="d-flex justify-content-between align-items-start">
+
+                                    <!-- ÁREA CLICÁVEL -->
+                                    <div class="flex-grow-1"
+                                         role="button"
+                                         data-bs-toggle="collapse"
+                                         data-bs-target="#aluno{{ aluno.id_alu }}"
+                                         aria-expanded="false">
+
+                                        <h5 class="mb-1 text-dark">
+                                            {{ aluno.nome }}
+                                        </h5>
+
+                                        <small class="text-muted">
+                                            Nº {{ aluno.num_chamada }}
+                                        </small>
+
+                                        <br>
+
+                                        <small class="fw-bold text-dark">
+                                            Advertências: {{ advertencias }}
+                                        </small>
+
+                                    </div>
+
+                                    <!-- BOTÕES -->
+                                    <div class="ms-2 d-flex gap-1">
+
+                                        {% if session.get('usuario_role') == 'Admin' %}
+
+                                        <a href="{{ url_for('deletar_aluno', id=aluno.id_alu) }}"
+                                           class="btn btn-danger btn-sm">
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                        </a>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                                <!-- CONTEÚDO EXPANSÍVEL -->
+                                <div class="collapse mt-3"
+                                     id="aluno{{ aluno.id_alu }}">
+
+                                    <hr>
+
+                                    <!-- INFO -->
+                                    <div class="mb-3">
+
+                                        <p class="mb-1">
+                                            <strong>ID:</strong>
+                                            {{ aluno.id_alu }}
+                                        </p>
+
+                                        <p class="mb-1">
+                                            <strong>Sala:</strong>
+                                            {{ sala.nome }}
+                                        </p>
+
+                                    </div>
+
+
+                                    <!-- FORM OBS -->
+                                    {% if session.get('usuario_role') in ['Admin', 'Assistant'] %}
+
+                                    <form method="POST"
+                                          action="{{ url_for('adicionar_observacao', id=aluno.id_alu) }}">
+
+                                        <textarea name="texto"
+                                                  class="form-control mb-2"
+                                                  rows="2"
+                                                  placeholder="Adicionar observação..."
+                                                  required></textarea>
+
+                                        <button class="btn btn-sm btn-primary w-100">
+                                            Registrar observação (+1 advertência)
+                                        </button>
+
+                                    </form>
+
+                                    {% endif %}
+
+
+                                    <!-- HISTÓRICO -->
+                                    {% if aluno.observacoes_rel %}
+
+                                    <div class="mt-4">
+
+                                        <h6 class="mb-3">
+                                            Histórico de Observações
+                                        </h6>
+
+                                        <div class="d-flex flex-column gap-2">
+
+                                            {% for obs in aluno.observacoes_rel %}
+
+                                            <div class="border rounded p-2 bg-light">
+
+                                                <small class="text-dark">
+                                                    {{ obs.texto }}
+                                                </small>
+
+                                            </div>
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </div>
+
+                                    {% else %}
+
+                                    <div class="alert alert-light mt-3 mb-0">
+
+                                        Nenhuma observação registrada.
+
+                                    </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="text-center p-4">
+
+                    <p class="text-muted mb-0">
+                        Nenhum aluno cadastrado.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- TAREFAS -->
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h4 class="mb-4">
+                    <i class="fa-solid fa-list-check text-warning"></i>
+                    Tarefas
+                </h4>
+
+                {% if tarefas %}
+
+                <div class="row g-3">
+
+                    {% for tarefa in tarefas %}
+
+                    <div class="col-md-6">
+
+                        <div class="card border-0 shadow-sm h-100">
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between align-items-start">
+
+                                    <div class="flex-grow-1">
+
+                                        <h5 class="mb-2">
+                                            {{ tarefa.nome }}
+                                        </h5>
+
+                                        <p class="text-muted mb-0">
+                                            {{ tarefa.descricao }}
+                                        </p>
+
+                                    </div>
+
+                                    {% if session.get('usuario_role') in ['Admin', 'Assistant'] %}
+
+                                    <div class="ms-2 d-flex gap-1">
+
+                                        <button class="btn btn-warning btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editarTarefa{{ tarefa.id_tarefa }}">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                        {% if session.get('usuario_role') == 'Admin' %}
+
+                                        <a href="{{ url_for('deletar_tarefa', id=tarefa.id_tarefa) }}"
+                                           class="btn btn-danger btn-sm">
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                        </a>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MODAL EDITAR TAREFA -->
+                    <div class="modal fade"
+                         id="editarTarefa{{ tarefa.id_tarefa }}"
+                         tabindex="-1">
+
+                        <div class="modal-dialog">
+
+                            <div class="modal-content">
+
+                                <form method="POST"
+                                      action="{{ url_for('editar_tarefa', id=tarefa.id_tarefa) }}">
+
+                                    <div class="modal-header">
+
+                                        <h5 class="modal-title">
+                                            Editar Tarefa
+                                        </h5>
+
+                                        <button type="button"
+                                                class="btn-close"
+                                                data-bs-dismiss="modal"></button>
+
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        <input type="text"
+                                               name="nome"
+                                               value="{{ tarefa.nome }}"
+                                               class="form-control mb-3"
+                                               required>
+
+                                        <textarea name="descricao"
+                                                  class="form-control"
+                                                  rows="4">{{ tarefa.descricao }}</textarea>
+
+                                    </div>
+
+                                    <div class="modal-footer">
+
+                                        <button type="submit"
+                                                class="btn btn-warning">
+
+                                            Salvar
+
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="text-center p-4">
+
+                    <p class="text-muted mb-0">
+                        Nenhuma tarefa cadastrada.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL ALUNO -->
+{% if session.get('usuario_role') == 'Admin' %}
+
+<div class="modal fade" id="modalAluno" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{{ url_for('criar_aluno') }}">
+
+                <input type="hidden"
+                       name="sala_id"
+                       value="{{ sala.id_sala }}">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Adicionar Aluno
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="text"
+                           name="nome"
+                           class="form-control mb-3"
+                           placeholder="Nome"
+                           required>
+
+                    <input type="number"
+                           name="num_chamada"
+                           class="form-control"
+                           placeholder="Número da chamada"
+                           required>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Adicionar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- MODAL TAREFA -->
+{% if session.get('usuario_role') in ['Admin', 'Assistant'] %}
+
+<div class="modal fade" id="modalTarefa" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{{ url_for('criar_tarefa') }}">
+
+                <input type="hidden"
+                       name="sala_id"
+                       value="{{ sala.id_sala }}">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Nova Tarefa
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="text"
+                           name="nome"
+                           class="form-control mb-3"
+                           placeholder="Nome"
+                           required>
+
+                    <textarea name="descricao"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Descrição"></textarea>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-warning">
+
+                        Criar Tarefa
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

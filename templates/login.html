@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+
+    <div class="col-md-5">
+
+        {% if erro %}
+            <div class="alert alert-danger">
+                {{ erro }}
+            </div>
+        {% endif %}
+
+        <div class="card shadow mb-4">
+
+            <div class="card-body">
+
+                <h2 class="text-center mb-4">
+                    Login
+                </h2>
+
+                <form method="POST" action="{{ url_for('login') }}">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Nome
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            placeholder="Digite seu nome"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Senha
+                        </label>
+
+                        <input
+                            type="password"
+                            name="senha"
+                            class="form-control"
+                            placeholder="Digite sua senha"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Entrar
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h3 class="text-center mb-4">
+                    Criar Conta
+                </h3>
+
+                <form method="POST" action="{{ url_for('registrar') }}">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Nome
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            placeholder="Escolha um nome"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Senha
+                        </label>
+
+                        <input
+                            type="password"
+                            name="senha"
+                            class="form-control"
+                            placeholder="Crie uma senha"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Criar Conta
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
